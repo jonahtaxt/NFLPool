@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.1" />
+    <PackageReference Include="Google.Apis" Version="1.62.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.62.0" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.62.0.3155" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.53" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NFLPool.Interface\NFLPool.Interface.csproj" />
+    <ProjectReference Include="..\NFLPool.Model\NFLPool.Model.csproj" />
+  </ItemGroup>
+
+</Project>
