@@ -2,6 +2,10 @@
 {
     public class Participant
     {
+        public Participant()
+        {
+            Bets = new List<string>();
+        }
         public int Id { get; set; }
         public string Name { get; set; }
         public int MondayNightPoints { get; set; }

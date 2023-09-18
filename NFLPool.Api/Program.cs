@@ -13,7 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<INFLCrawler, NFLCrawler>();
-builder.Services.AddScoped<IExcelReader, ExcelReader>();
+builder.Services.AddScoped<IFileReader, FileReader>();
 builder.Services.AddScoped<IGoogleAPI, GoogleAPI>();
 builder.Services.AddScoped<IPoolService, PoolService>();
 builder.Services.Configure<DBConfiguration>(builder.Configuration.GetSection("MongoDB"));

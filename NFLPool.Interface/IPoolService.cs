@@ -5,6 +5,6 @@ namespace NFLPool.Interface
     public interface IPoolService
     {
         Task<WeekResults> GetWeekResults(INFLCrawler nflCrawler, IGoogleAPI googleAPI,
-            IExcelReader excelReader, int year, int week, int seasontype);
+            IFileReader excelReader, int year, int week, int seasontype);
     }
 }

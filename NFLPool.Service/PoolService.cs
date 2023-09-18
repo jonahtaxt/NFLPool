@@ -6,7 +6,7 @@ namespace NFLPool.Service
     public class PoolService : IPoolService
     {
         public async Task<WeekResults> GetWeekResults(INFLCrawler nflCrawler, IGoogleAPI googleAPI,
-            IExcelReader excelReader, int year, int week, int seasontype)
+            IFileReader excelReader, int year, int week, int seasontype)
         {
             var results = new WeekResults();
             List<PoolTeam> poolTeams;
@@ -14,12 +14,12 @@ namespace NFLPool.Service
             var gameScoresTask = nflCrawler.GetWeekScoresAsync(year, week, seasontype);
             var poolScoresTask = Task.Run(async () =>
             {
-                using (var excelStream = await googleAPI.DownloadFile($"{week}{year}.xlsx"))
+                using (var fileStream = await googleAPI.DownloadFile($"{week}{year}.txt"))
                 {
-                    if (excelStream != null)
+                    if (fileStream != null)
                     {
-                        excelStream.Position = 0;
-                        poolWeekScores = excelReader.ReadFile(excelStream);
+                        fileStream.Position = 0;
+                        poolWeekScores = excelReader.ReadFile(fileStream);
                         results.Participants = poolWeekScores.Participants;
                     }
                 }
@@ -36,40 +36,20 @@ namespace NFLPool.Service
                     var winningTeam = gameScore.WinningTeam;
                     if (winningTeam != null)
                     {
-                        poolWeekScores.Teams.FirstOrDefault(team => team.TeamName == winningTeam.PoolName)?.Participants
-                             .ForEach(participantId =>
-                             {
-                                 poolWeekScores.Participants.FirstOrDefault(participant => participant.Id == participantId).TotalPoints += 1;
-                             });
+                        results.Participants.ForEach(participant =>
+                        {
+                            if (participant.Bets.Any(bet => bet == winningTeam))
+                            {
+                                participant.TotalPoints++;
+                            }
+                        });
                     }
                 }
 
-                results.Participants.ForEach(participant =>
-                {
-                    participant.Bets = new List<string>();
-                    for (var i = 0; results.GameScores.Count > i; i++)
-                    {
-                        var betOnTeam = string.Empty;
-                        var awayTeam = results.GameScores[i].AwayTeam;
-                        var homeTeam = results.GameScores[i].HomeTeam;
+                var mondayNightGame = results.GameScores.FirstOrDefault(gameScore => (gameScore.HomeTeam.PoolName == results.Participants[0].Bets.Last() || gameScore.AwayTeam.PoolName == results.Participants[0].Bets.Last()));
 
-                        if(poolWeekScores.Teams.FirstOrDefault(team => team.TeamName == awayTeam.PoolName)
-                            .Participants.Any(p => p == participant.Id))
-                        {
-                            betOnTeam = awayTeam.PoolName;
-                        }
-                        else if (poolWeekScores.Teams.FirstOrDefault(team => team.TeamName == homeTeam.PoolName)
-                            .Participants.Any(p => p == participant.Id))
-                        {
-                            betOnTeam = homeTeam.PoolName;
-                        }
-
-                        participant.Bets.Add(betOnTeam);
-                    }
-                });
-
-                var mondayNightAwayScore = results.GameScores.Last().AwayScore;
-                var mondayNightHomeScore = results.GameScores.Last().HomeScore;
+                var mondayNightAwayScore = mondayNightGame.AwayScore;
+                var mondayNightHomeScore = mondayNightGame.HomeScore;
 
                 if (mondayNightAwayScore > 0 || mondayNightHomeScore > 0)
                 {
@@ -86,6 +66,29 @@ namespace NFLPool.Service
                         participant.MondayNightPointsDifference = pointDifference;
                     });
                 }
+
+                results.Participants.ForEach(participant =>
+                {
+                    var orderedBets = new List<string>();
+                    results.GameScores.ForEach(gameScore =>
+                    {
+                        if(participant.Bets.Any(bet => gameScore.AwayTeam.PoolName == bet))
+                        {
+                            orderedBets.Add(gameScore.AwayTeam.PoolName);
+                        }
+                        else if (participant.Bets.Any(bet => gameScore.HomeTeam.PoolName == bet))
+                        {
+                            orderedBets.Add(gameScore.HomeTeam.PoolName);
+                        }
+                        else
+                        {
+                            orderedBets.Add(string.Empty);
+                        }
+                    });
+                    participant.Bets.Clear();
+                    participant.Bets.AddRange(orderedBets);
+                    orderedBets.Clear();
+                });
 
                 results.Participants = results.Participants.OrderByDescending(participant => participant.TotalPoints)
                     .ThenBy(participant => participant.MondayNightPointsDifference)

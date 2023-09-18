@@ -187,7 +187,13 @@ function App() {
                                                 idCounter++;
                                                 if (betOnTeam != undefined) {
                                                     return (<TableCell key={idCounter}>
-                                                        <img src={betOnTeam.logo} alt={betOnTeam.poolName} title={betOnTeam.poolName} className={`logo ${(gs.winningTeam != null && gs.winningTeam.poolName) != betOnTeam.poolName ? `loser` : ``}`} />
+                                                        <img
+                                                            src={betOnTeam.logo}
+                                                            alt={betOnTeam.poolName}
+                                                            title={betOnTeam.poolName}
+                                                            className={`logo ${(
+                                                                (gs.winningTeam != null && gs.winningTeam) != betOnTeam.poolName)
+                                                                && (gs.awayScore > 0 && gs.homeScore > 0)? `loser` : ``}`} />
                                                     </TableCell>);
                                                 } else {
                                                     return (<TableCell key={idCounter}>&nbsp;</TableCell>);

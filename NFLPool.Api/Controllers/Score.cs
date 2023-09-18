@@ -9,11 +9,11 @@ namespace NFLPool.Api.Controllers
     public class Score : ControllerBase
     {
         private readonly INFLCrawler _nflCrawler;
-        private readonly IExcelReader _excelReader;
+        private readonly IFileReader _excelReader;
         private readonly IGoogleAPI _googleAPI;
         private readonly IPoolService _poolService;
 
-        public Score(INFLCrawler nflCrawler, IExcelReader excelReader,
+        public Score(INFLCrawler nflCrawler, IFileReader excelReader,
             IGoogleAPI googleAPI, IPoolService poolService)
         {
             _nflCrawler = nflCrawler;

@@ -8,20 +8,17 @@
         public int AwayScore { get; set; }
         public int HomeScore { get; set; }
 
-        public List<int> AwayParticipants { get; set; }
-        public List<int> HomeParticipants { get; set; }
-
-        public Team? WinningTeam
+        public string? WinningTeam
         {
             get
             {
                 if (AwayScore > HomeScore)
                 {
-                    return AwayTeam;
+                    return AwayTeam.PoolName;
                 }
                 else if (AwayScore < HomeScore)
                 {
-                    return HomeTeam;
+                    return HomeTeam.PoolName;
                 }
                 else
                 {
