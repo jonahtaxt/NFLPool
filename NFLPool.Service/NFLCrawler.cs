@@ -81,8 +81,8 @@ namespace NFLPool.Service
                     GameScoreId = gameScoreId,
                     AwayTeam = awayTeam,
                     HomeTeam = homeTeam,
-                    AwayScore = (!string.IsNullOrEmpty(awayScore) ? Convert.ToInt32(awayScore) : 0),
-                    HomeScore = (!string.IsNullOrEmpty(homeScore) ? Convert.ToInt32(homeScore) : 0),
+                    AwayScore = !string.IsNullOrEmpty(awayScore) ? Convert.ToInt32(awayScore) : 0,
+                    HomeScore = !string.IsNullOrEmpty(homeScore) ? Convert.ToInt32(homeScore) : 0,
                 });
 
                 gameScoreId += 1;

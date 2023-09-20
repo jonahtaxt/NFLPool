@@ -9,7 +9,6 @@ namespace NFLPool.Service
             IFileReader excelReader, int year, int week, int seasontype)
         {
             var results = new WeekResults();
-            List<PoolTeam> poolTeams;
             PoolWeekScores? poolWeekScores = null;
             var gameScoresTask = nflCrawler.GetWeekScoresAsync(year, week, seasontype);
             var poolScoresTask = Task.Run(async () =>
@@ -20,7 +19,10 @@ namespace NFLPool.Service
                     {
                         fileStream.Position = 0;
                         poolWeekScores = excelReader.ReadFile(fileStream);
-                        results.Participants = poolWeekScores.Participants;
+                        if(poolWeekScores != null)
+                        {
+                            results.Participants = poolWeekScores.Participants;
+                        }
                     }
                 }
             });
