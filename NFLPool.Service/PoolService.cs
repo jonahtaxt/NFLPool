@@ -6,23 +6,26 @@ namespace NFLPool.Service
     public class PoolService : IPoolService
     {
         public async Task<WeekResults> GetWeekResults(INFLCrawler nflCrawler, IGoogleAPI googleAPI,
-            IFileReader excelReader, int year, int week, int seasontype)
+            IFileReader excelReader, string? gAuthPath, int year, int week)
         {
+            if(gAuthPath is null)
+            {
+                throw new ArgumentNullException(gAuthPath, "Google Auth File Path is null");
+            }
+            
             var results = new WeekResults();
             PoolWeekScores? poolWeekScores = null;
-            var gameScoresTask = nflCrawler.GetWeekScoresAsync(year, week, seasontype);
+            var gameScoresTask = nflCrawler.GetWeekScoresAsync(year, week);
             var poolScoresTask = Task.Run(async () =>
             {
-                using (var fileStream = await googleAPI.DownloadFile("/home/cygnus/temp/nflpool-auth.json", $"{week}{year}.txt"))
+                using var fileStream = await googleAPI.DownloadFile(gAuthPath, $"{week}{year}.txt");
+                if (fileStream != null)
                 {
-                    if (fileStream != null)
+                    fileStream.Position = 0;
+                    poolWeekScores = excelReader.ReadFile(fileStream);
+                    if (poolWeekScores != null)
                     {
-                        fileStream.Position = 0;
-                        poolWeekScores = excelReader.ReadFile(fileStream);
-                        if(poolWeekScores != null)
-                        {
-                            results.Participants = poolWeekScores.Participants;
-                        }
+                        results.Participants = poolWeekScores.Participants;
                     }
                 }
             });
@@ -48,25 +51,25 @@ namespace NFLPool.Service
                     }
                 }
 
-                var mondayNightGame = results.GameScores.FirstOrDefault(gameScore => (gameScore.HomeTeam.PoolName == results.Participants[0].Bets.Last() || gameScore.AwayTeam.PoolName == results.Participants[0].Bets.Last()));
+                var mondayNightGame = results.GameScores.FirstOrDefault(gameScore => gameScore.HomeTeam?.PoolName == results.Participants[0].Bets.Last() || gameScore.AwayTeam?.PoolName == results.Participants[0].Bets.Last());
 
-                var mondayNightAwayScore = mondayNightGame.AwayScore;
-                var mondayNightHomeScore = mondayNightGame.HomeScore;
-
-                if (mondayNightAwayScore > 0 || mondayNightHomeScore > 0)
+                if(mondayNightGame != null)
                 {
-                    var mondayNightScoreDifference = mondayNightAwayScore + mondayNightHomeScore;
-
-                    results.Participants.ForEach(participant =>
+                    if (mondayNightGame.AwayScore > 0 || mondayNightGame.HomeScore > 0)
                     {
-                        var pointDifference = mondayNightScoreDifference - participant.MondayNightPoints;
+                        var mondayNightScoreDifference = mondayNightGame.AwayScore + mondayNightGame.HomeScore;
 
-                        if (pointDifference < 0)
+                        results.Participants.ForEach(participant =>
                         {
-                            pointDifference *= -1;
-                        }
-                        participant.MondayNightPointsDifference = pointDifference;
-                    });
+                            var pointDifference = mondayNightScoreDifference - participant.MondayNightPoints;
+
+                            if (pointDifference < 0)
+                            {
+                                pointDifference *= -1;
+                            }
+                            participant.MondayNightPointsDifference = pointDifference;
+                        });
+                    }
                 }
 
                 results.Participants.ForEach(participant =>
@@ -74,13 +77,19 @@ namespace NFLPool.Service
                     var orderedBets = new List<string>();
                     results.GameScores.ForEach(gameScore =>
                     {
-                        if(participant.Bets.Any(bet => gameScore.AwayTeam.PoolName == bet))
+                        if(participant.Bets.Any(bet => gameScore.AwayTeam?.PoolName == bet))
                         {
-                            orderedBets.Add(gameScore.AwayTeam.PoolName);
+                            if(gameScore.AwayTeam is not null)
+                            {
+                                orderedBets.Add(gameScore.AwayTeam.PoolName);
+                            }
                         }
-                        else if (participant.Bets.Any(bet => gameScore.HomeTeam.PoolName == bet))
+                        else if (participant.Bets.Any(bet => gameScore.HomeTeam?.PoolName == bet))
                         {
-                            orderedBets.Add(gameScore.HomeTeam.PoolName);
+                            if(gameScore.HomeTeam is not null)
+                            {
+                                orderedBets.Add(gameScore.HomeTeam.PoolName);
+                            }
                         }
                         else
                         {

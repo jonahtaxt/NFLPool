@@ -3,8 +3,8 @@
     public class GameScore
     {
         public int GameScoreId { get; set; }
-        public Team AwayTeam { get; set; }
-        public Team HomeTeam { get; set; }
+        public Team? AwayTeam { get; set; }
+        public Team? HomeTeam { get; set; }
         public int AwayScore { get; set; }
         public int HomeScore { get; set; }
 
@@ -14,11 +14,11 @@
             {
                 if (AwayScore > HomeScore)
                 {
-                    return AwayTeam.PoolName;
+                    return AwayTeam?.PoolName;
                 }
                 else if (AwayScore < HomeScore)
                 {
-                    return HomeTeam.PoolName;
+                    return HomeTeam?.PoolName;
                 }
                 else
                 {

@@ -12,27 +12,22 @@ namespace NFLPool.Api.Controllers
         private readonly IFileReader _excelReader;
         private readonly IGoogleAPI _googleAPI;
         private readonly IPoolService _poolService;
+        private readonly IConfiguration _configuration;
 
         public Score(INFLCrawler nflCrawler, IFileReader excelReader,
-            IGoogleAPI googleAPI, IPoolService poolService)
+            IGoogleAPI googleAPI, IPoolService poolService, IConfiguration configuration)
         {
             _nflCrawler = nflCrawler;
             _excelReader = excelReader;
             _googleAPI = googleAPI;
             _poolService = poolService;
+            _configuration = configuration;
         }
 
         [HttpGet]
-        public async Task<WeekResults> Get(int year, int week, int seasontype)
+        public async Task<WeekResults> Get(int year, int week)
         {
-            try
-            {
-                return await _poolService.GetWeekResults(_nflCrawler, _googleAPI, _excelReader, year, week, seasontype);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return await _poolService.GetWeekResults(_nflCrawler, _googleAPI, _excelReader, _configuration["Google:JsonCredentialsPath"], year, week);
         }
     }
 }

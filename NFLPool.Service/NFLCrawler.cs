@@ -24,9 +24,9 @@ namespace NFLPool.Service
             };
         }
 
-        public async Task<List<GameScore>> GetWeekScoresAsync(int year, int week, int seasontype)
+        public async Task<List<GameScore>> GetWeekScoresAsync(int year, int week)
         {
-            _htmlDocument.LoadHtml(await _httpClient.GetStringAsync($"https://www.espn.com/nfl/scoreboard/_/week/{week}/year/{year}/seasontype/{seasontype}"));
+            _htmlDocument.LoadHtml(await _httpClient.GetStringAsync($"https://www.espn.com/nfl/scoreboard/_/week/{week}/year/{year}/seasontype/2"));
 
             var gameResults = new List<GameScore>();
             var gameScoreId = 1;
@@ -63,11 +63,11 @@ namespace NFLPool.Service
 
                 if (awayType is not null)
                 {
-                    awayTeam = (Team)Activator.CreateInstance(awayType);
+                    awayTeam = Activator.CreateInstance(awayType) as Team;
                 }
                 if (homeType is not null)
                 {
-                    homeTeam = (Team)Activator.CreateInstance(homeType);
+                    homeTeam = Activator.CreateInstance(homeType) as Team;
                 }
 
                 if (gameScores.Count > 0)

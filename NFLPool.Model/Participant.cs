@@ -4,8 +4,10 @@
     {
         public Participant()
         {
+            Name = string.Empty;
             Bets = new List<string>();
         }
+
         public int Id { get; set; }
         public string Name { get; set; }
         public int MondayNightPoints { get; set; }

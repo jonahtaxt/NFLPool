@@ -4,6 +4,7 @@
     {
         public PoolTeam()
         {
+            TeamName = string.Empty;
             Participants = new List<int>();
         }
         public string TeamName { get; set; }

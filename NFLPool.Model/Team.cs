@@ -2,6 +2,11 @@
 {
     public abstract class Team
     {
+        public Team()
+        {
+            PoolName = string.Empty;
+            Logo = string.Empty;
+        }
         public string Name
         {
             get
