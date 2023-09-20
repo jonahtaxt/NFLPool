@@ -1,13 +1,13 @@
-﻿namespace NFLPool.Model
+﻿namespace NFLPool.Model;
+
+public class WeekResults
 {
-    public class WeekResults
+    public WeekResults()
     {
-        public WeekResults()
-        {
-            GameScores = new List<GameScore>();
-            Participants = new List<Participant>();
-        }
-        public List<GameScore> GameScores { get; set; }
-        public List<Participant> Participants { get; set; }
+        GameScores = new List<GameScore>();
+        Participants = new List<Participant>();
     }
+
+    public List<GameScore> GameScores { get; set; }
+    public List<Participant> Participants { get; set; }
 }

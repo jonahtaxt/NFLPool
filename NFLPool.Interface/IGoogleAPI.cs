@@ -1,7 +1,6 @@
-﻿namespace NFLPool.Interface
+﻿namespace NFLPool.Interface;
+
+public interface IGoogleAPI
 {
-    public interface IGoogleAPI
-    {
-        Task<Stream?> DownloadFile(string authPath, string fileName);
-    }
+    Task<Stream?> DownloadFile(string authPath, string fileName);
 }

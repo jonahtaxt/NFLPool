@@ -1,12 +1,11 @@
-﻿namespace NFLPool.Model
+﻿namespace NFLPool.Model;
+
+public class WeekScore
 {
-    public class WeekScore
+    public WeekScore()
     {
-        private readonly List<GameScore> _scores;
-        public WeekScore()
-        {
-            _scores = new List<GameScore>();
-        }
-        public List<GameScore> GameScores => _scores;
+        GameScores = new List<GameScore>();
     }
+
+    public List<GameScore> GameScores { get; }
 }

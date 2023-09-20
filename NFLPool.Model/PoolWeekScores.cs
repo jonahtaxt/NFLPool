@@ -1,17 +1,14 @@
-﻿namespace NFLPool.Model
+﻿namespace NFLPool.Model;
+
+public class PoolWeekScores
 {
-    public class PoolWeekScores
+    public PoolWeekScores(List<Participant> participants, List<PoolTeam> teams)
     {
-        private List<Participant> _participants;
-        private List<PoolTeam> _teams;
-
-        public PoolWeekScores(List<Participant> participants, List<PoolTeam> teams)
-        {
-            _participants = participants;
-            _teams = teams;
-        }
-
-        public List<Participant> Participants => _participants;
-        public List<PoolTeam> Teams => _teams;
+        Participants = participants;
+        Teams = teams;
     }
+
+    public List<Participant> Participants { get; }
+
+    public List<PoolTeam> Teams { get; }
 }

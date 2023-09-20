@@ -1,9 +1,8 @@
 ﻿using NFLPool.Model;
 
-namespace NFLPool.Interface
+namespace NFLPool.Interface;
+
+public interface INFLCrawler
 {
-    public interface INFLCrawler
-    {
-        Task<List<GameScore>> GetWeekScoresAsync(int year, int week);
-    }
+    Task<List<GameScore>> GetWeekScoresAsync(int year, int week);
 }
