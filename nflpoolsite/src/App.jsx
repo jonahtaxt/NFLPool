@@ -26,6 +26,7 @@ function App() {
     const [week, setWeek] = useState(0);
     const [showPool, setShowPool] = useState(false);
     const [firstRun, setFirstRun] = useState(true);
+    const [winner, setWinner] = useState(null);
 
     const nflAPIClient = axios.create({
         baseURL: "https://apipool.cloudsolo.net/score"
@@ -52,9 +53,11 @@ function App() {
     }));
 
     let idCounter = 0;
+    let poolPosition = 0;
 
     const fetchPoolData = async () => {
         setFirstRun(false);
+        setWinner(null);
         setGameScores([]);
         setParticipants([]);
         setShowPool(false);
@@ -65,7 +68,9 @@ function App() {
         }
         if (response.data.participants != null) {
             setParticipants(response.data.participants);
-            setShowPool(true);
+        }
+        if (response.data.winner != null) {
+            setWinner(response.data.winner);
         }
     }
 
@@ -139,6 +144,16 @@ function App() {
                     >
                         Actualizar</ColorButton>
                 </FormControl>
+                {showPool && winner !== null &&
+                    <FormControl>
+                        <div className="winnerParticipant">
+                            <div>Ganador: {winner.name}</div>
+                            <div>Puntos: {winner.totalPoints}</div>
+                            <div>Dif. Monday Night: {winner.mondayNightPointsDifference}</div>
+                            <div>Quiniela enviada: {winner.id}</div>
+                        </div>
+                    </FormControl>
+                }
             </div>
             {firstRun && <div className="firstRun">Selecciona un a&ntilde;o y semana para ver los resultados</div>}
             {!showPool && !firstRun && <div className="loading"><img src={spinningFootball} alt="loading..." /></div>}
@@ -148,7 +163,8 @@ function App() {
                         <Table stickyHeader aria-label="sticky table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>&nbsp;</TableCell>
+                                    <TableCell><div className="points">Posici&oacute;n</div></TableCell>
+                                    <TableCell><div className="points" style={{ width: '50%'}}>Nombre</div></TableCell>
                                     {gameScores.map((gameScore) => {
                                         return (
                                             <TableCell key={gameScore.gameScoreId}>
@@ -173,10 +189,12 @@ function App() {
                             </TableHead>
                             <TableBody>
                                 {participants.map((participant) => {
+                                    poolPosition++;
                                     return (
                                         <TableRow key={participant.id}
                                                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell>{participant.name}</TableCell>
+                                            <TableCell><div className="poolPosition">{poolPosition}</div></TableCell>
+                                            <TableCell><div className="participantName">{participant.name}</div></TableCell>
                                             {participant.bets.map((bet) => {
                                                 let betOnTeam;
                                                 let gs;

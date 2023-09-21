@@ -2,12 +2,7 @@
 
 public class WeekResults
 {
-    public WeekResults()
-    {
-        GameScores = new List<GameScore>();
-        Participants = new List<Participant>();
-    }
-
-    public List<GameScore> GameScores { get; set; }
-    public List<Participant> Participants { get; set; }
+    public List<GameScore> GameScores { get; set; } = new();
+    public List<Participant> Participants { get; set; } = new();
+    public Participant? Winner { get; set; } = null;
 }

@@ -5,20 +5,19 @@ namespace NFLPool.Service;
 
 public class FileReader : IFileReader
 {
-    public PoolWeekScores? ReadFile(Stream fileStream)
+    public PoolWeekScores ReadFile(Stream fileStream)
     {
         var poolTeams = new List<PoolTeam>();
         var poolParticipants = new List<Participant>();
         using (var sr = new StreamReader(fileStream))
         {
-            var line = string.Empty;
             var firstLine = true;
             var participantId = 1;
-            while ((line = sr.ReadLine()) != null)
+            while (sr.ReadLine() is { } line)
                 if (firstLine)
                 {
                     var teams = line.Split(',');
-                    foreach (var team in teams) poolTeams.Add(new PoolTeam { TeamName = team.Trim() });
+                    poolTeams.AddRange(teams.Select(team => new PoolTeam { TeamName = team.Trim() }));
                     firstLine = false;
                 }
                 else

@@ -4,5 +4,5 @@ namespace NFLPool.Interface;
 
 public interface IFileReader
 {
-    PoolWeekScores? ReadFile(Stream fileStream);
+    PoolWeekScores ReadFile(Stream fileStream);
 }

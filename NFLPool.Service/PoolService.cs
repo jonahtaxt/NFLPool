@@ -5,8 +5,8 @@ namespace NFLPool.Service;
 
 public class PoolService : IPoolService
 {
-    public async Task<WeekResults> GetWeekResults(INFLCrawler nflCrawler, IGoogleAPI googleAPI,
-        IFileReader excelReader, string? gAuthPath, int year, int week)
+    public async Task<WeekResults> GetWeekResults(INFLCrawler nflCrawler, IGoogleAPI googleApi,
+        IFileReader fileReader, string? gAuthPath, int year, int week)
     {
         if (gAuthPath is null) throw new ArgumentNullException(gAuthPath, "Google Auth File Path is null");
 
@@ -15,12 +15,12 @@ public class PoolService : IPoolService
         var gameScoresTask = nflCrawler.GetWeekScoresAsync(year, week);
         var poolScoresTask = Task.Run(async () =>
         {
-            using var fileStream = await googleAPI.DownloadFile(gAuthPath, $"{week}{year}.txt");
+            await using var fileStream = await googleApi.DownloadFile(gAuthPath, $"{week}{year}.txt");
             if (fileStream != null)
             {
                 fileStream.Position = 0;
-                poolWeekScores = excelReader.ReadFile(fileStream);
-                if (poolWeekScores != null) results.Participants = poolWeekScores.Participants;
+                poolWeekScores = fileReader.ReadFile(fileStream);
+                results.Participants = poolWeekScores.Participants;
             }
         });
 
@@ -80,10 +80,15 @@ public class PoolService : IPoolService
                 participant.Bets.AddRange(orderedBets);
                 orderedBets.Clear();
             });
-
+            
             results.Participants = results.Participants.OrderByDescending(participant => participant.TotalPoints)
                 .ThenBy(participant => participant.MondayNightPointsDifference)
                 .ThenBy(participant => participant.Id).ToList();
+
+            if (mondayNightGame?.AwayScore > 0 || mondayNightGame?.HomeScore > 0)
+            {
+                results.Winner = results.Participants.First();
+            }
         }
 
         return results;

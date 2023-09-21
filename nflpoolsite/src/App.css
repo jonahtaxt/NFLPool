@@ -25,8 +25,8 @@
   font-family: "Roboto Condensed", sans-serif;
   text-orientation: mixed;
   writing-mode: vertical-rl;
-  font-size: 16px;
-  height: 295px;
+  font-size: 14px;
+  height: 260px;
   text-align: right;
 }
 
@@ -95,4 +95,21 @@ h1 {
   margin: 0;
   color: whitesmoke;
   padding-top: 50px;
+}
+
+.poolPosition {
+  text-align: center;
+}
+
+.participantName {
+  font-size: 13px;
+}
+
+.winnerParticipant {
+  margin-left: 28px;
+  color: black;
+  font-weight: bolder;
+  font-style: italic;
+  font-size: 14px;
+  font-family: "Roboto Condensed", serif;
 }
