@@ -16,7 +16,13 @@ builder.Services.AddScoped<IPoolService, PoolService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowAll", builder => builder
+        .WithOrigins("http://localhost:5173",
+            "http://192.168.50.125:4000",
+            "http://localhost:4000",
+            "https://quiniela.cloudsolo.net")
+        .WithMethods("GET")
+        .AllowAnyHeader());
 });
 
 var app = builder.Build();
