@@ -1,0 +1,14 @@
+version: '3.9'
+
+network:
+  pool_net:
+    name: pool_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.60.0/25
+
+services:
+  poolapi:
+    container_name: nflpoolapi
+      
