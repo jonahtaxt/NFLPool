@@ -1,6 +1,6 @@
 version: '3.9'
 
-network:
+networks:
   pool_net:
     name: pool_net
     driver: bridge
@@ -9,6 +9,45 @@ network:
         - subnet: 192.168.60.0/25
 
 services:
+  pooldb:
+    container_name: nflpooldb
+    image: couchbase:community-7.2.1
+    networks:
+      pool_net: 
+        ipv4_address: 192.168.60.125
+    hostname: pooldb
+    ports:
+      - 8091-8093:8091-8093
+      - 11210:11210
+    volumes:
+      - /mnt/ssd/docker/appdata/couchbase:/opt/couchbase/var
+
   poolapi:
     container_name: nflpoolapi
-      
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /home/cygnus/temp:/misc
+    networks:
+      pool_net:
+        ipv4_address: 192.168.60.2
+    hostname: poolapi
+    ports:
+      - 7000:7000
+    depends_on:
+      - nflpooldb
+  
+  poolsite:
+    container_name: nflpoolsite
+    build:
+      context: ./nflpoolsite
+      dockerfile: Dockerfile
+    networks:
+      pool_net:
+        ipv4_address: 192.168.60.3
+    hostname: poolsite
+    ports:
+      - 4000:4000
+    depends_on:
+      - poolapi
