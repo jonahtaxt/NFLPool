@@ -17,8 +17,8 @@ services:
         ipv4_address: 192.168.60.125
     hostname: pooldb
     ports:
-      - 8091-8093:8091-8093
-      - 11210:11210
+      - 8091-8096:8091-8096
+      - 11207-11211:11207-11211
     volumes:
       - /mnt/ssd/docker/appdata/couchbase:/opt/couchbase/var
 

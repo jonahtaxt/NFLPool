@@ -1,4 +1,5 @@
 using NFLPool.Interface;
+using NFLPool.Model;
 using NFLPool.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,13 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+var couchbaseConfig = new CouchbaseConfiguration();
+builder.Configuration.GetSection("Couchbase").Bind(couchbaseConfig);
+builder.Services.AddSingleton(couchbaseConfig);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<INFLCrawler, NFLCrawler>();
 builder.Services.AddScoped<IFileReader, FileReader>();
 builder.Services.AddScoped<IGoogleAPI, GoogleAPI>();
+builder.Services.AddScoped<IDataService, CouchbaseService>();
 builder.Services.AddScoped<IPoolService, PoolService>();
+
+
 
 builder.Services.AddCors(options =>
 {
