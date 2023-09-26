@@ -51,4 +51,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+Console.WriteLine("API Version:1.0.0");
+
 app.Run();

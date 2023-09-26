@@ -9,19 +9,6 @@ networks:
         - subnet: 192.168.60.0/25
 
 services:
-  pooldb:
-    container_name: nflpooldb
-    image: couchbase:community-7.2.1
-    networks:
-      pool_net: 
-        ipv4_address: 192.168.60.125
-    hostname: pooldb
-    ports:
-      - 8091-8096:8091-8096
-      - 11207-11211:11207-11211
-    volumes:
-      - /mnt/ssd/docker/appdata/couchbase:/opt/couchbase/var
-
   poolapi:
     container_name: nflpoolapi
     build:
@@ -34,9 +21,7 @@ services:
         ipv4_address: 192.168.60.2
     hostname: poolapi
     ports:
-      - 7000:7000
-    depends_on:
-      - nflpooldb
+      - "7000:7000"
   
   poolsite:
     container_name: nflpoolsite
@@ -48,6 +33,17 @@ services:
         ipv4_address: 192.168.60.3
     hostname: poolsite
     ports:
-      - 4000:4000
-    depends_on:
-      - poolapi
+      - "4000:4000"
+
+  poolnfldb:
+    container_name: nflpooldb
+    image: couchbase:community-7.2.1
+    networks:
+      pool_net:
+        ipv4_address: 192.168.60.4
+    hostname: poolnfldb
+    ports:
+      - "8091-8096:8091-8096"
+      - "11207-11211:11207-11211"
+    volumes:
+      - /mnt/ssd/docker/appdata/couchbase:/opt/couchbase/var
