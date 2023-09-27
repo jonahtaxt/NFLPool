@@ -62,15 +62,17 @@ function App() {
         setParticipants([]);
         setShowPool(false);
         let response = await nflAPIClient.get('?year=' + year + '&week=' + week);
-        if (response.data.gameScores != null) {
+        if (response.data.gameScores !== null) {
             setGameScores(response.data.gameScores);
             setShowPool(true);
         }
-        if (response.data.participants != null) {
+        if (response.data.participants !== null) {
             setParticipants(response.data.participants);
         }
-        if (response.data.winner != null) {
-            setWinner(response.data.winner);
+        if (response.data.participantWinnerId !== null && response.data.participants !== null) {
+            setWinner(response.data.participants.filter(participant => {
+                return participant.id === response.data.participantWinnerId;
+            })[0]);
         }
     }
 

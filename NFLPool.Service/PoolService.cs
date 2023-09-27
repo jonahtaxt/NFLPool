@@ -18,12 +18,8 @@ public class PoolService : IPoolService
         _googleApi = googleApi;
         _fileReader = fileReader;
         _dataService = dataService;
-        _participantsCollection = new CouchbaseDto<List<Participant>>("Participants")
-        {
-            Bucket = "nflpooldb",
-            Scope = "nflpoolscope",
-            CouchbaseConfiguration = couchbaseConfiguration
-        };
+        _participantsCollection = new CouchbaseDto<List<Participant>>(couchbaseConfiguration, "nflpooldb",
+            "nflpoolscope", "", null, "Participants");
     }
 
     public async Task<WeekResults> GetWeekResults(string? gAuthPath, int year, int week)

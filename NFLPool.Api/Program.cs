@@ -3,6 +3,8 @@ using NFLPool.Model;
 using NFLPool.Service;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Add services to the container.
 
@@ -51,6 +53,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-Console.WriteLine("API Version:1.0.0");
+app.Logger.LogInformation("API Version 1.0.0");
 
 app.Run();

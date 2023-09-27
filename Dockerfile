@@ -22,17 +22,10 @@ RUN rm -r NFLPool.Service/bin
 RUN rm -r NFLPool.Service/obj
 WORKDIR /app/NFLPool.Api
 RUN dotnet publish -c Release -o out
-WORKDIR /app
-COPY NFLPool.Api/out ./out/
-RUN rm -r NFLPool.Api
-RUN rm -r NFLPool.Interface
-RUN rm -r NFLPool.Model
-RUN rm -r NFLPool.Service
-RUN rm *.sln
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
-COPY --from=build-env /app/out ./
+COPY --from=build-env /app/NFLPool.Api/out ./
 ENV ASPNETCORE_URLS=http://+:7000
 EXPOSE 7000
 ENTRYPOINT ["dotnet", "NFLPool.Api.dll"]

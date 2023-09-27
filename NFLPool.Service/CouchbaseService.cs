@@ -24,8 +24,10 @@ public class CouchbaseService : IDataService
 
         if (_collection == null) throw new Exception("Couchbase collection is null");
 
-        var result = await _collection.GetAsync(couchbaseDto.Key);
-        couchbaseDto.Document = result.ContentAs<T>();
+        if ((await _collection.ExistsAsync(couchbaseDto.Key)).Exists)
+        {
+            couchbaseDto.Document = (await _collection.GetAsync(couchbaseDto.Key)).ContentAs<T>();
+        }
     }
 
     private async Task ConnectToDb<T>(CouchbaseDto<T> couchbaseDto) where T : class

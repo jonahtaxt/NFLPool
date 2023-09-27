@@ -9,38 +9,11 @@ networks:
         - subnet: 192.168.60.0/25
 
 services:
-  poolapi:
-    container_name: nflpoolapi
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - /home/cygnus/temp:/misc
-    networks:
-      pool_net:
-        ipv4_address: 192.168.60.2
-    hostname: poolapi
-    ports:
-      - "7000:7000"
-  
-  poolsite:
-    container_name: nflpoolsite
-    build:
-      context: ./nflpoolsite
-      dockerfile: Dockerfile
-    networks:
-      pool_net:
-        ipv4_address: 192.168.60.3
-    hostname: poolsite
-    ports:
-      - "4000:4000"
-
   poolnfldb:
     container_name: nflpooldb
     image: couchbase:community-7.2.1
     networks:
-      pool_net:
-        ipv4_address: 192.168.60.4
+      - pool_net
     hostname: poolnfldb
     ports:
       - "8091-8096:8091-8096"
