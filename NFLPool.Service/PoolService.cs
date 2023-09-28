@@ -22,22 +22,36 @@ public class PoolService : IPoolService
             "nflpoolscope", "", null, "Participants");
     }
 
-    public async Task<WeekResults> GetWeekResults(string? gAuthPath, int year, int week)
+    public async Task InsertPoolParticipants(string gAuthPath, string fileName, int year, int week)
     {
-        if (gAuthPath is null) throw new ArgumentNullException(gAuthPath, "Google Auth File Path is null");
+        if (string.IsNullOrEmpty(fileName) || year == 0 || week == 0)
+            throw new ArgumentException(
+                "FileName, year or int were not provided");
 
+        await using var fileStream = await _googleApi.DownloadFile(gAuthPath, fileName);
+
+        if (fileStream == null) return;
+
+        fileStream.Position = 0;
+        _participantsCollection.Key = $"{year}.{week}";
+        _participantsCollection.Document = _fileReader.ReadFile(fileStream);
+        if (_participantsCollection.Document is not null) await _dataService.Insert(_participantsCollection);
+    }
+
+    public async Task<WeekResults> GetWeekResults(int year, int week)
+    {
         var results = new WeekResults();
 
         var gameScoresTask = _nflCrawler.GetWeekScoresAsync(year, week);
 
-        var poolScoresTask = GetPoolParticipants(gAuthPath, year, week);
+        var poolScoresTask = GetPoolParticipants(year, week);
 
         await Task.WhenAll(gameScoresTask, poolScoresTask);
 
         results.GameScores = gameScoresTask.Result;
         results.Participants = poolScoresTask.Result;
 
-        if (results.Participants.Count <= 0) return results;
+        if (results.Participants is null) return results;
 
         CalculateTotalPoints(results);
 
@@ -55,25 +69,18 @@ public class PoolService : IPoolService
         return results;
     }
 
-    private async Task<List<Participant>> GetPoolParticipants(string gAuthPath, int year, int week)
+    private async Task<List<Participant>?> GetPoolParticipants(int year, int week)
     {
         _participantsCollection.Key = $"{year}.{week}";
         await _dataService.GetDocumentByKey(_participantsCollection);
 
-        if (_participantsCollection.Document != null) return _participantsCollection.Document;
-
-        await using var fileStream = await _googleApi.DownloadFile(gAuthPath, $"{week}{year}.txt");
-
-        if (fileStream == null) return new List<Participant>();
-
-        fileStream.Position = 0;
-        var participants = _fileReader.ReadFile(fileStream);
-
-        return participants;
+        return _participantsCollection.Document ?? null;
     }
 
     private static void OrderParticipantsByWinner(WeekResults results)
     {
+        if (results.Participants is null) return;
+
         results.Participants.ForEach(participant =>
         {
             var orderedBets = new List<string>();
@@ -104,6 +111,8 @@ public class PoolService : IPoolService
 
     private static GameScore? CalculateMondayNightPoints(WeekResults results)
     {
+        if (results.Participants is null) return null;
+
         var mondayNightGame = results.GameScores.FirstOrDefault(gameScore =>
             gameScore.HomeTeam?.PoolName == results.Participants[0].Bets.Last() ||
             gameScore.AwayTeam?.PoolName == results.Participants[0].Bets.Last());
@@ -127,11 +136,10 @@ public class PoolService : IPoolService
 
     private static void CalculateTotalPoints(WeekResults results)
     {
-        results.Participants.ForEach(participant =>
-        {
-            participant.TotalPoints = 0;
-        });
-        
+        if (results.Participants is null) return;
+
+        results.Participants.ForEach(participant => { participant.TotalPoints = 0; });
+
         foreach (var winningTeam in results.GameScores.Select(gameScore => gameScore.WinningTeam)
                      .Where(winningTeam => winningTeam != null))
             results.Participants.ForEach(participant =>

@@ -24,7 +24,6 @@ builder.Services.AddScoped<IDataService, CouchbaseService>();
 builder.Services.AddScoped<IPoolService, PoolService>();
 
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder => builder
