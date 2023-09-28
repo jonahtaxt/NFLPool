@@ -127,6 +127,11 @@ public class PoolService : IPoolService
 
     private static void CalculateTotalPoints(WeekResults results)
     {
+        results.Participants.ForEach(participant =>
+        {
+            participant.TotalPoints = 0;
+        });
+        
         foreach (var winningTeam in results.GameScores.Select(gameScore => gameScore.WinningTeam)
                      .Where(winningTeam => winningTeam != null))
             results.Participants.ForEach(participant =>
