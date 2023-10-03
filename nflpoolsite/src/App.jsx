@@ -61,7 +61,7 @@ function App() {
         setGameScores([]);
         setParticipants([]);
         setShowPool(false);
-        let response = await nflAPIClient.get('?year=' + year + '&week=' + week);
+        let response = await nflAPIClient.get('/' + year + '/' + week);
         if (response.data.gameScores !== null) {
             setGameScores(response.data.gameScores);
             setShowPool(true);

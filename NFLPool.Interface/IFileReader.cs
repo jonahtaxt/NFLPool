@@ -4,5 +4,5 @@ namespace NFLPool.Interface;
 
 public interface IFileReader
 {
-    List<Participant> ReadFile(Stream fileStream);
+    (List<Participant> Participants, List<string> MondayNightTeams) ReadFile(Stream fileStream);
 }

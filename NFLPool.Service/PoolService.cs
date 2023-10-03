@@ -9,7 +9,7 @@ public class PoolService : IPoolService
     private readonly IFileReader _fileReader;
     private readonly IGoogleAPI _googleApi;
     private readonly INFLCrawler _nflCrawler;
-    private readonly CouchbaseDto<List<Participant>> _participantsCollection;
+    private readonly CouchbaseDto<ParticipantWeekData> _participantWeekData;
 
     public PoolService(INFLCrawler nflCrawler, IGoogleAPI googleApi,
         IFileReader fileReader, IDataService dataService, CouchbaseConfiguration couchbaseConfiguration)
@@ -18,8 +18,8 @@ public class PoolService : IPoolService
         _googleApi = googleApi;
         _fileReader = fileReader;
         _dataService = dataService;
-        _participantsCollection = new CouchbaseDto<List<Participant>>(couchbaseConfiguration, "nflpooldb",
-            "nflpoolscope", "", null, "Participants");
+        _participantWeekData = new CouchbaseDto<ParticipantWeekData>(couchbaseConfiguration, "nflpooldb",
+            "nflpoolscope", "", null, string.Empty);
     }
 
     public async Task InsertPoolParticipants(string gAuthPath, string fileName, int year, int week)
@@ -33,9 +33,14 @@ public class PoolService : IPoolService
         if (fileStream == null) return;
 
         fileStream.Position = 0;
-        _participantsCollection.Key = $"{year}.{week}";
-        _participantsCollection.Document = _fileReader.ReadFile(fileStream);
-        if (_participantsCollection.Document is not null) await _dataService.Insert(_participantsCollection);
+        _participantWeekData.Key = $"{year}.{week}";
+        var readFile = _fileReader.ReadFile(fileStream);
+        _participantWeekData.Document = new ParticipantWeekData
+        {
+            Participants = readFile.Participants,
+            MondayNightTeams = readFile.MondayNightTeams
+        };
+        if (_participantWeekData.Document is not null) await _dataService.Insert(_participantWeekData);
     }
 
     public async Task<WeekResults> GetWeekResults(int year, int week)
@@ -49,32 +54,42 @@ public class PoolService : IPoolService
         await Task.WhenAll(gameScoresTask, poolScoresTask);
 
         results.GameScores = gameScoresTask.Result;
-        results.Participants = poolScoresTask.Result;
+        results.Participants = poolScoresTask.Result?.Participants;
+        var mondayNightTeams = poolScoresTask.Result?.MondayNightTeams;
 
         if (results.Participants is null) return results;
 
         CalculateTotalPoints(results);
 
-        var mondayNightGame = CalculateMondayNightPoints(results);
+        if (mondayNightTeams != null)
+        {
+            var mondayNightGame = CalculateMondayNightPoints(results, mondayNightTeams);
 
-        OrderParticipantsByWinner(results);
+            OrderParticipantsByWinner(results);
 
-        if (mondayNightGame?.AwayScore > 0 || mondayNightGame?.HomeScore > 0)
-            results.ParticipantWinnerId = results.Participants.First().Id;
+            if (mondayNightGame?.AwayScore > 0 || mondayNightGame?.HomeScore > 0)
+                results.ParticipantWinnerId = results.Participants.First().Id;
+        }
 
-        _participantsCollection.Document = results.Participants;
-        _participantsCollection.Key = $"{year}.{week}";
-        await _dataService.Insert(_participantsCollection);
+        if (poolScoresTask.Result != null)
+        {
+            poolScoresTask.Result.Participants = results.Participants;
+
+            _participantWeekData.Document = poolScoresTask.Result;
+        }
+
+        _participantWeekData.Key = $"{year}.{week}";
+        await _dataService.Insert(_participantWeekData);
 
         return results;
     }
 
-    private async Task<List<Participant>?> GetPoolParticipants(int year, int week)
+    private async Task<ParticipantWeekData?> GetPoolParticipants(int year, int week)
     {
-        _participantsCollection.Key = $"{year}.{week}";
-        await _dataService.GetDocumentByKey(_participantsCollection);
+        _participantWeekData.Key = $"{year}.{week}";
+        await _dataService.GetDocumentByKey(_participantWeekData);
 
-        return _participantsCollection.Document ?? null;
+        return _participantWeekData.Document ?? null;
     }
 
     private static void OrderParticipantsByWinner(WeekResults results)
@@ -109,27 +124,31 @@ public class PoolService : IPoolService
             .ThenBy(participant => participant.Id).ToList();
     }
 
-    private static GameScore? CalculateMondayNightPoints(WeekResults results)
+    private static GameScore? CalculateMondayNightPoints(WeekResults results, List<string> mondayNightFootballTeams)
     {
         if (results.Participants is null) return null;
 
         var mondayNightGame = results.GameScores.FirstOrDefault(gameScore =>
-            gameScore.HomeTeam?.PoolName == results.Participants[0].Bets.Last() ||
-            gameScore.AwayTeam?.PoolName == results.Participants[0].Bets.Last());
+            gameScore.AwayTeam?.PoolName == mondayNightFootballTeams.First() &&
+                gameScore.HomeTeam?.PoolName == mondayNightFootballTeams.Last());
 
-        if (mondayNightGame != null)
-            if (mondayNightGame.AwayScore > 0 || mondayNightGame.HomeScore > 0)
-            {
-                var mondayNightScoreDifference = mondayNightGame.AwayScore + mondayNightGame.HomeScore;
+        switch (mondayNightGame)
+        {
+            case null:
+                return mondayNightGame;
+            case { AwayScore: <= 0, HomeScore: <= 0 }:
+                return mondayNightGame;
+        }
 
-                results.Participants.ForEach(participant =>
-                {
-                    var pointDifference = mondayNightScoreDifference - participant.MondayNightPoints;
+        var mondayNightScoreDifference = mondayNightGame.AwayScore + mondayNightGame.HomeScore;
 
-                    if (pointDifference < 0) pointDifference *= -1;
-                    participant.MondayNightPointsDifference = pointDifference;
-                });
-            }
+        results.Participants.ForEach(participant =>
+        {
+            var pointDifference = mondayNightScoreDifference - participant.MondayNightPoints;
+
+            if (pointDifference < 0) pointDifference *= -1;
+            participant.MondayNightPointsDifference = pointDifference;
+        });
 
         return mondayNightGame;
     }

@@ -5,9 +5,10 @@ namespace NFLPool.Service;
 
 public class FileReader : IFileReader
 {
-    public List<Participant> ReadFile(Stream fileStream)
+    public (List<Participant> Participants, List<string> MondayNightTeams) ReadFile(Stream fileStream)
     {
         var poolParticipants = new List<Participant>();
+        var mondayNightTeams = new List<string>();
         using var sr = new StreamReader(fileStream);
         var firstLine = true;
         var participantId = 1;
@@ -28,9 +29,12 @@ public class FileReader : IFileReader
             }
             else
             {
+                var teams = line.Split(",");
+                mondayNightTeams.Add(teams[^2]);
+                mondayNightTeams.Add(teams[^1]);
                 firstLine = false;
             }
 
-        return poolParticipants;
+        return (poolParticipants, mondayNightTeams);
     }
 }

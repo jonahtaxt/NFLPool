@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NFLPool.Interface;
+using NFLPool.Model;
 
 namespace NFLPool.Api.Controllers;
 
@@ -28,12 +29,12 @@ public class Score : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Get(int year, int week)
+    [HttpGet("{year}/{week}")]
+    public async Task<ActionResult<WeekResults>> Get(int year, int week)
     {
         try
         {
-            return Ok(await _poolService.GetWeekResults(year, week));
+            return await _poolService.GetWeekResults(year, week);
         }
         catch (Exception ex)
         {
@@ -43,17 +44,30 @@ public class Score : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(string fileName, int year, int week)
+    public async Task<IActionResult> Post(PoolFile poolFile)
     {
         try
         {
             var gAuthPath = _configuration["Google:JsonCredentialsPath"];
             if (string.IsNullOrEmpty(gAuthPath))
                 throw new ArgumentNullException("Google credentials not provided");
-
-            await _poolService.InsertPoolParticipants(gAuthPath, fileName,
-                year, week);
-            _logger.LogInformation($"Pool Participants for year {year} week {week} added successfully");
+            
+            if (!poolFile.Name.Contains("quiniela"))
+            {
+                _logger.LogInformation(
+                    $"File {poolFile.Name} discarded");
+                return Ok();
+            }
+            
+            if (string.IsNullOrEmpty(poolFile.Name) || poolFile.Name.Split('_').Length != 3)
+            {
+                throw new Exception("Pool file name incorrect format");
+            }
+            
+            await _poolService.InsertPoolParticipants(gAuthPath, poolFile.Name, poolFile.Year(), poolFile.Week());
+            
+            _logger.LogInformation(
+                $"Pool Participants for file {poolFile.Name} year {poolFile.Year()} week {poolFile.Week()} added successfully");
             return Ok();
         }
         catch (Exception ex)
