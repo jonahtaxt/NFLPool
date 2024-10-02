@@ -1,6 +1,5 @@
 package com.effisoft.nflpool.services;
 
-import com.effisoft.nflpool.interfaces.INFLCrawler;
 import com.effisoft.nflpool.model.GameScore;
 import com.effisoft.nflpool.model.Team;
 import org.jsoup.Jsoup;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class NFLCrawler implements INFLCrawler {
+public class NFLCrawler implements com.effisoft.nflpool.interfaces.NFLCrawler {
 
     private static final String SCORE_ROW_SELECTOR =
             "section .Scoreboard.bg-clr-white.flex.flex-auto.justify-between";
@@ -27,13 +26,15 @@ public class NFLCrawler implements INFLCrawler {
 
     private static final String NFL_URL = "https://www.espn.com/nfl/scoreboard/_/week/%s/year/%s/seasontype/2";
 
-
     @Override
     public List<GameScore> getWeekScore(int year, int week) {
         List<GameScore> weekScores = new ArrayList<>();
         String nflScoreUrl = String.format(NFL_URL, week, year);
         try {
-            Document nflWebDoc = Jsoup.connect(nflScoreUrl).get();
+            Document nflWebDoc = Jsoup.connect(nflScoreUrl).header("Cache-Control", "no-cache") // No caching
+                    .header("Pragma", "no-cache")        // For HTTP/1.0
+                    .header("Expires", "0")
+                    .get();
             int gameScoreId = 1;
             for (Element scoreRow : nflWebDoc.select(SCORE_ROW_SELECTOR)) {
                 Team awayTeam = null;

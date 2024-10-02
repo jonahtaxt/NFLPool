@@ -1,6 +1,6 @@
 package com.effisoft.nflpool.controllers;
 
-import com.effisoft.nflpool.interfaces.INFLCrawler;
+import com.effisoft.nflpool.interfaces.NFLCrawler;
 import com.effisoft.nflpool.model.GameScore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,9 +11,9 @@ import java.util.List;
 @RestController
 public class ScoreController {
 
-    private final INFLCrawler nflCrawler;
+    private final NFLCrawler nflCrawler;
 
-    public ScoreController(INFLCrawler nflCrawler) {
+    public ScoreController(NFLCrawler nflCrawler) {
         this.nflCrawler = nflCrawler;
     }
 

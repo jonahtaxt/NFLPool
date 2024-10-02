@@ -4,6 +4,6 @@ import com.effisoft.nflpool.model.GameScore;
 
 import java.util.List;
 
-public interface INFLCrawler {
+public interface NFLCrawler {
     public List<GameScore> getWeekScore(int year, int week);
 }
