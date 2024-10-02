@@ -361,3 +361,61 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Java class files
+*.class
+
+# Log files
+*.log
+
+# Dependency directories
+/lib/
+build/
+out/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+
+# Eclipse files
+.settings/
+.classpath
+.project
+
+# Maven target directory
+target/
+
+# Gradle wrapper files
+.gradle/
+build/
+
+# NetBeans files
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+build/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# User-specific files
+*.user
+*.sublime-project
+*.sublime-workspace
+
+# Other files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
