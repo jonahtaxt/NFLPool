@@ -3,15 +3,12 @@ package com.effisoft.nflpool.controllers;
 import com.effisoft.nflpool.interfaces.DatabaseAccess;
 import com.effisoft.nflpool.interfaces.FileReader;
 import com.effisoft.nflpool.interfaces.NFLCrawler;
-import com.effisoft.nflpool.model.Participant;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
 
 @RestController
 public class ScoreController {
@@ -30,16 +27,16 @@ public class ScoreController {
 
     @GetMapping("/scores/{year}/{week}")
     String GetWeekScores(@PathVariable int year, @PathVariable int week) {
-        List<Participant> participants = excelReader.readParticipants(year, week);
-        //List<GameScore> test = this.nflCrawler.getWeekScore(year, week);
+        return "testing";
+    }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            this.databaseAccess.Upsert(new DatabaseDTO<>(participants,
-                    "ParticipantWeekData",
+    @PostMapping("/scores/")
+    void PostWeekParticipants(@RequestParam("file")MultipartFile file,
+                                int year, int week) {
+        try(InputStream fileStream = file.getInputStream()) {
+            this.databaseAccess.Upsert(new DatabaseDTO<>(excelReader.readParticipants(fileStream), "ParticipantWeekData",
                     String.format("%s.%s", year, week)));
-            return objectMapper.writeValueAsString(participants);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

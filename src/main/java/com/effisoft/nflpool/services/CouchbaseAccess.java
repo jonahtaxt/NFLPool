@@ -10,22 +10,28 @@ import java.time.Duration;
 @Service
 public class CouchbaseAccess implements DatabaseAccess {
 
+    private Cluster cluster;
+
     static String connectionString = "couchbase://couchbase.cloudsolo.net";
-    static String username = "";
-    static String password = "";
+    static String username = "cygnus";
+    static String password = "qLriJrFC979QPy";
     static String bucketName = "NFLPool-bucket";
+
+    public CouchbaseAccess() {
+        this.cluster = Cluster.connect(connectionString, username, password);
+    }
 
     @Override
     public <T> void Upsert(DatabaseDTO<T> documentDTO) {
         Collection weekDataCollection = GetCollection(documentDTO.getCollectionName());
         weekDataCollection.upsert(documentDTO.getId(), documentDTO.getDocument());
+        this.cluster.close();
     }
 
     private Collection GetCollection(String collectionName) {
-        Cluster cluster = Cluster.connect(connectionString, username, password);
-
-        Bucket bucket = cluster.bucket(bucketName);
-        bucket.waitUntilReady(Duration.ofSeconds(60));
+        this.cluster = Cluster.connect(connectionString, username, password);
+        Bucket bucket = this.cluster.bucket(bucketName);
+        bucket.waitUntilReady(Duration.ofSeconds(10));
         Scope scope = bucket.scope("WeeklyResults-scope");
         return scope.collection("ParticipantWeekData");
     }

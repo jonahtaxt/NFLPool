@@ -6,13 +6,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,24 +18,17 @@ import java.util.List;
 @Service
 public class ExcelReader implements FileReader {
 
-    private FileInputStream fileInputStream;
-    private XSSFWorkbook workbook;
-    private Sheet sheet;
-
-    @Override
-    public List<Participant> readParticipants(int year, int week) {
+    public List<Participant> readParticipants(InputStream fileStream) {
 
         List<Participant> participants = new ArrayList<>();
-        String filePath = String.format("/home/cygnusremote/Downloads/%s%s.xlsx",year,week);
         int participantId = 1;
         int lastColumnIndex = -1;
         int mondayNightPointsColumn = 0;
-        Boolean lastRow = false;
+        boolean lastRow = false;
 
         try {
-            fileInputStream = new FileInputStream(filePath);
-            workbook = new XSSFWorkbook(fileInputStream);
-            sheet = workbook.getSheetAt(2);
+            XSSFWorkbook workbook = new XSSFWorkbook(fileStream);
+            Sheet sheet = workbook.getSheetAt(2);
             Iterator<Row> rowIterator = sheet.iterator();
 
             while(rowIterator.hasNext() && !lastRow) {
@@ -50,7 +41,9 @@ public class ExcelReader implements FileReader {
                     if((cell.getColumnIndex() == lastColumnIndex)) {
                         break;
                     } else if(row.getRowNum() == 0) {
-                        if (cell.getStringCellValue().equals("PUNTOS")) {
+                        if (CellType.STRING.equals(cell.getCellType()) &&
+                                !CellType.BLANK.equals(cell.getCellType()) &&
+                                cell.getStringCellValue().equals("PUNTOS")) {
                             lastColumnIndex = cell.getColumnIndex() + 1;
                             mondayNightPointsColumn = cell.getColumnIndex();
                         }
@@ -75,9 +68,7 @@ public class ExcelReader implements FileReader {
                     }
                 }
             }
-
             workbook.close();
-            fileInputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
