@@ -13,9 +13,13 @@ public class DatabaseDTO<T> {
         return document;
     }
 
+    public void setDocument(T document) {
+        this.document = document;
+    }
+
     private final String id;
     private final String collectionName;
-    private final T document;
+    private T document;
 
     public DatabaseDTO(T document, String collectionName, String id) {
         this.id = id;

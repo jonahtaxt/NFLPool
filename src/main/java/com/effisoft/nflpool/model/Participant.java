@@ -1,5 +1,8 @@
 package com.effisoft.nflpool.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +15,11 @@ public class Participant {
     private final List<String> bets;
     private int totalPoints;
 
-    public Participant(int id, String name, int mondayNightPoints, List<String> bets) {
+    @JsonCreator
+    public Participant(@JsonProperty("id") int id,
+                       @JsonProperty("name") String name,
+                       @JsonProperty("mondayNightPoints") int mondayNightPoints,
+                       @JsonProperty("bets") List<String> bets) {
         this.id = id;
         this.name = name;
         this.bets = bets;

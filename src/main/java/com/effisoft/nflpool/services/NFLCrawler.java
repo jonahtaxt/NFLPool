@@ -6,12 +6,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 public class NFLCrawler implements com.effisoft.nflpool.interfaces.NFLCrawler {
@@ -27,8 +31,10 @@ public class NFLCrawler implements com.effisoft.nflpool.interfaces.NFLCrawler {
     private static final String NFL_URL = "https://www.espn.com/nfl/scoreboard/_/week/%s/year/%s/seasontype/2";
 
     @Override
-    public List<GameScore> getWeekScore(int year, int week) {
+    @Async
+    public CompletableFuture<List<GameScore>> asyncGetWeekScore(int year, int week) {
         List<GameScore> weekScores = new ArrayList<>();
+        CompletableFuture<List<GameScore>> completableFuture = new CompletableFuture<>();
         String nflScoreUrl = String.format(NFL_URL, week, year);
         try {
             Document nflWebDoc = Jsoup.connect(nflScoreUrl).header("Cache-Control", "no-cache") // No caching
@@ -61,7 +67,8 @@ public class NFLCrawler implements com.effisoft.nflpool.interfaces.NFLCrawler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return weekScores;
+        completableFuture.complete(weekScores);
+        return completableFuture;
     }
 
     private Team InstantiateTeam(String teamName)  {

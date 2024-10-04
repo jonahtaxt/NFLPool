@@ -1,10 +1,9 @@
 package com.effisoft.nflpool.interfaces;
 
-import com.effisoft.nflpool.model.Participant;
+import com.effisoft.nflpool.model.ParticipantWeekData;
 
 import java.io.InputStream;
-import java.util.List;
 
 public interface FileReader {
-    public List<Participant> readParticipants(InputStream fileStream);
+    ParticipantWeekData readParticipants(InputStream fileStream);
 }

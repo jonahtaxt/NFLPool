@@ -2,6 +2,7 @@ package com.effisoft.nflpool.services;
 
 import com.effisoft.nflpool.interfaces.FileReader;
 import com.effisoft.nflpool.model.Participant;
+import com.effisoft.nflpool.model.ParticipantWeekData;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -18,9 +19,10 @@ import java.util.List;
 @Service
 public class ExcelReader implements FileReader {
 
-    public List<Participant> readParticipants(InputStream fileStream) {
+    public ParticipantWeekData readParticipants(InputStream fileStream) {
 
         List<Participant> participants = new ArrayList<>();
+        List<String> mondayNightTeams = new ArrayList<>();
         int participantId = 1;
         int lastColumnIndex = -1;
         int mondayNightPointsColumn = 0;
@@ -46,6 +48,8 @@ public class ExcelReader implements FileReader {
                                 cell.getStringCellValue().equals("PUNTOS")) {
                             lastColumnIndex = cell.getColumnIndex() + 1;
                             mondayNightPointsColumn = cell.getColumnIndex();
+                            mondayNightTeams.add(row.getCell(mondayNightPointsColumn - 3).getStringCellValue());
+                            mondayNightTeams.add(row.getCell(mondayNightPointsColumn - 2).getStringCellValue());
                         }
                     } else {
                         if(cell.getColumnIndex() == 0 && cell.getStringCellValue().equals("LastRow")) {
@@ -72,6 +76,6 @@ public class ExcelReader implements FileReader {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return participants;
+        return new ParticipantWeekData(participants, mondayNightTeams);
     }
 }
