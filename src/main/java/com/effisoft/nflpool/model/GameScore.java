@@ -1,5 +1,7 @@
 package com.effisoft.nflpool.model;
 
+import com.effisoft.nflpool.model.teams.Team;
+
 public class GameScore {
 
     private final int gameScoreId;

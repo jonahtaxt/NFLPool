@@ -17,6 +17,7 @@ import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -37,9 +38,12 @@ public class ScoreController {
 
     @GetMapping("/scores/{year}/{week}")
     String GetWeekScores(@PathVariable int year, @PathVariable int week) throws ExecutionException, InterruptedException, JsonProcessingException {
-        ParticipantWeekData participants = this.databaseAccess.GetById(ParticipantWeekData.class,"ParticipantWeekData", "2024.4");
-//        Future<List<GameScore>> completableFutureGameScore = this.nflCrawler.asyncGetWeekScore(year, week);
-//        List<GameScore> weekGameScores = completableFutureGameScore.get();
+        CompletableFuture<ParticipantWeekData> futureParticipantWeekData = this.databaseAccess.GetById(ParticipantWeekData.class,"ParticipantWeekData", "2024.4");
+        CompletableFuture<List<GameScore>> completableFutureGameScore = this.nflCrawler.asyncGetWeekScore(year, week);
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futureParticipantWeekData, completableFutureGameScore);
+        combinedFuture.get();
+        ParticipantWeekData participants = futureParticipantWeekData.get();
+        List<GameScore> weekGameScores = completableFutureGameScore.get();
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(participants);
     }
