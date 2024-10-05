@@ -1,6 +1,8 @@
 package com.effisoft.nflpool.services;
 
+import com.couchbase.client.core.error.DocumentNotFoundException;
 import com.couchbase.client.java.*;
+import com.couchbase.client.java.kv.GetResult;
 import com.effisoft.nflpool.interfaces.DatabaseAccess;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
 import org.springframework.stereotype.Service;
@@ -52,7 +54,11 @@ public class CouchbaseAccess implements DatabaseAccess {
             try {
                 cluster = Cluster.connect(connectionString, username, password);
                 Collection weekDataCollection = GetCollection(cluster, repositoryName);
+                GetResult getResult = weekDataCollection.get(id);
                 result.complete(weekDataCollection.get(id).contentAs(classType));
+                return null;
+            } catch (DocumentNotFoundException e) {
+                result.complete(null);
                 return null;
             } catch (Exception e) {
                 result.completeExceptionally(new RuntimeException(e));

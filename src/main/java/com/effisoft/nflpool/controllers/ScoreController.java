@@ -6,6 +6,7 @@ import com.effisoft.nflpool.interfaces.NFLCrawler;
 import com.effisoft.nflpool.model.GameScore;
 import com.effisoft.nflpool.model.Participant;
 import com.effisoft.nflpool.model.ParticipantWeekData;
+import com.effisoft.nflpool.model.WeekResults;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,14 +39,21 @@ public class ScoreController {
 
     @GetMapping("/scores/{year}/{week}")
     String GetWeekScores(@PathVariable int year, @PathVariable int week) throws ExecutionException, InterruptedException, JsonProcessingException {
-        CompletableFuture<ParticipantWeekData> futureParticipantWeekData = this.databaseAccess.GetById(ParticipantWeekData.class,"ParticipantWeekData", "2024.4");
+        CompletableFuture<ParticipantWeekData> futureParticipantWeekData = this.databaseAccess.GetById(ParticipantWeekData.class,"ParticipantWeekData",
+                String.format("%s.%s", year, week));
         CompletableFuture<List<GameScore>> completableFutureGameScore = this.nflCrawler.asyncGetWeekScore(year, week);
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futureParticipantWeekData, completableFutureGameScore);
         combinedFuture.get();
+
         ParticipantWeekData participants = futureParticipantWeekData.get();
         List<GameScore> weekGameScores = completableFutureGameScore.get();
+
+        WeekResults weekResults = new WeekResults(weekGameScores,
+                participants != null ? participants.getParticipants() : null,
+                null);
+
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(participants);
+        return ow.writeValueAsString(weekResults);
     }
 
     @PostMapping("/scores/")
