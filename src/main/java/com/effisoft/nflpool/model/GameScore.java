@@ -41,10 +41,10 @@ public class GameScore {
 
     public String getWinningTeam() {
         if(this.awayScore > this.homeScore) {
-            return awayTeam.getPoolName();
+            return awayTeam.getName();
         }
         if(this.awayScore < this.homeScore) {
-            return homeTeam.getPoolName();
+            return homeTeam.getName();
         }
         return null;
     }

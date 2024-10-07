@@ -58,4 +58,8 @@ public class Participant {
         this.totalPoints = totalPoints;
     }
 
+    public void addTotalPoints() {
+        this.totalPoints ++;
+    }
+
 }

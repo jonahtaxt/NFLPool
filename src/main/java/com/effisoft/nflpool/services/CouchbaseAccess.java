@@ -32,7 +32,7 @@ public class CouchbaseAccess implements DatabaseAccess {
     }
 
     @Override
-    public <T> void Upsert(DatabaseDTO<T> documentDTO) {
+    public <T> void upsert(DatabaseDTO<T> documentDTO) {
         Cluster cluster = null;
         try {
             cluster = Cluster.connect(connectionString, username, password);
@@ -47,7 +47,7 @@ public class CouchbaseAccess implements DatabaseAccess {
         }
     }
 
-    public <T> CompletableFuture<T> GetById(Class<T> classType, String repositoryName, String id) {
+    public <T> CompletableFuture<T> asyncGetById(Class<T> classType, String repositoryName, String id) {
         CompletableFuture<T> result = new CompletableFuture<>();
         Executors.newCachedThreadPool().submit(() -> {
             Cluster cluster = null;
