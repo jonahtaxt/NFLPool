@@ -24,7 +24,6 @@ public class CouchbaseAccess implements DatabaseAccess {
     }
 
     private Collection GetCollection(Cluster cluster, String collectionName) {
-        cluster = Cluster.connect(connectionString, username, password);
         Bucket bucket = cluster.bucket(bucketName);
         bucket.waitUntilReady(Duration.ofSeconds(10));
         Scope scope = bucket.scope("WeeklyResults-scope");

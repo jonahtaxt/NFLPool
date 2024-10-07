@@ -18,9 +18,7 @@ public class ParticipantWeekData {
     private List<Participant> participants;
     private List<String> mondayNightTeams;
 
-    public ParticipantWeekData() {
-
-    }
+    public ParticipantWeekData() {}
 
     @JsonCreator
     public ParticipantWeekData(@JsonProperty("participants") List<Participant> participants,

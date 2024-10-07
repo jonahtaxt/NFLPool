@@ -12,7 +12,7 @@ public class Participant {
     private final String name;
     private final int mondayNightPoints;
     private int mondayNightPointsDifference;
-    private final List<String> bets;
+    private List<String> bets;
     private int totalPoints;
 
     @JsonCreator
@@ -62,4 +62,8 @@ public class Participant {
         this.totalPoints ++;
     }
 
+    public void setOrderedBets(List<String> orderedBets) {
+        this.bets.clear();
+        this.bets.addAll(orderedBets);
+    }
 }
