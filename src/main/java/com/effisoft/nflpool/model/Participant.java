@@ -12,7 +12,7 @@ public class Participant {
     private final String name;
     private final int mondayNightPoints;
     private int mondayNightPointsDifference;
-    private List<String> bets;
+    private final List<String> bets;
     private int totalPoints;
 
     @JsonCreator

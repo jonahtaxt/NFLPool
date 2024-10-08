@@ -3,6 +3,7 @@ package com.effisoft.nflpool.services;
 import com.couchbase.client.core.error.DocumentNotFoundException;
 import com.couchbase.client.java.*;
 import com.couchbase.client.java.kv.GetResult;
+import com.effisoft.nflpool.configuration.CouchbaseConfiguration;
 import com.effisoft.nflpool.interfaces.DatabaseAccess;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,15 @@ import java.util.concurrent.Executors;
 @Service
 public class CouchbaseAccess implements DatabaseAccess {
 
-    static String connectionString = "couchbase://";
-    static String username = "";
-    static String password = "";
-    static String bucketName = "NFLPool-bucket";
+    private final String connectionString;
+    private final String username;
+    private final String password;
+    private final String bucketName = "NFLPool-bucket";
 
-    public CouchbaseAccess() {
-
+    public CouchbaseAccess(CouchbaseConfiguration couchbaseConfiguration) {
+        this.connectionString = couchbaseConfiguration.getConnectionString();
+        this.username = couchbaseConfiguration.getUsername();
+        this.password = couchbaseConfiguration.getPassword();
     }
 
     private Collection GetCollection(Cluster cluster, String collectionName) {

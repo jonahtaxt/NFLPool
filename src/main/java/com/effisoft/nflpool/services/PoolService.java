@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 @Service
 public class PoolService implements com.effisoft.nflpool.interfaces.PoolService {
 
-    private final NFLCrawler nflCrawler;;
+    private final NFLCrawler nflCrawler;
     private final DatabaseAccess databaseAccess;
 
     public PoolService(NFLCrawler nflCrawler,

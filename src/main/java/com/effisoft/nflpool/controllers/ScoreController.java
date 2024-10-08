@@ -1,5 +1,6 @@
 package com.effisoft.nflpool.controllers;
 
+import com.effisoft.nflpool.configuration.CouchbaseConfiguration;
 import com.effisoft.nflpool.interfaces.DatabaseAccess;
 import com.effisoft.nflpool.interfaces.FileReader;
 import com.effisoft.nflpool.interfaces.PoolService;
@@ -8,6 +9,7 @@ import com.effisoft.nflpool.model.data.DatabaseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +21,8 @@ import java.util.concurrent.ExecutionException;
 @RestController
 public class ScoreController {
 
+    @Autowired
+    private CouchbaseConfiguration configuration;
     private final PoolService poolService;
     private final DatabaseAccess databaseAccess;
     private final FileReader excelReader;
