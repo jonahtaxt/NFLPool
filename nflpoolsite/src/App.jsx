@@ -29,7 +29,7 @@ function App() {
     const [winner, setWinner] = useState(null);
 
     const nflAPIClient = axios.create({
-        baseURL: "https://apipool.cloudsolo.net/score"
+        baseURL: "https://apipool.cloudsolo.net/scores"
     });
 
     const handleYearChange = (event) => {
@@ -100,7 +100,7 @@ function App() {
                         onChange={handleYearChange}
                     >
                         <MenuItem value={0}></MenuItem>
-                        <MenuItem value={2023}>2023</MenuItem>
+                        <MenuItem value={2024}>2024</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl variant="filled" sx={{ m: 1, minWidth: 120 }}>
