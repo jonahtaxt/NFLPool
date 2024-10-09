@@ -171,9 +171,9 @@ function App() {
                                         return (
                                             <TableCell key={gameScore.gameScoreId}>
                                                 <div className="game">
-                                                    <div className={`team ${gameScore.homeScore > gameScore.awayScore ? `winner` : ``}`}>{gameScore.homeTeam.name === '_49ers' ? '49ers' : gameScore.homeTeam.name} ({gameScore.homeScore})</div>
+                                                    <div className={`team ${gameScore.homeScore > gameScore.awayScore ? `winner` : ``}`}>{gameScore.homeTeam.name} ({gameScore.homeScore})</div>
                                                     <div className="team">&nbsp;@&nbsp;</div>
-                                                    <div className={`team ${gameScore.homeScore < gameScore.awayScore ? `winner` : ``}`}>{gameScore.awayTeam.name === '_49ers' ? '49ers' : gameScore.awayTeam.name} ({gameScore.awayScore})</div>
+                                                    <div className={`team ${gameScore.homeScore < gameScore.awayScore ? `winner` : ``}`}>{gameScore.awayTeam.name} ({gameScore.awayScore})</div>
                                                 </div>
                                             </TableCell>
                                         );
@@ -200,9 +200,9 @@ function App() {
                                             {participant.bets.map((bet) => {
                                                 let betOnTeam;
                                                 let gs;
-                                                gs = gameScores.find(gameTeam => gameTeam.awayTeam.poolName.trim() === bet.trim());
+                                                gs = gameScores.find(gameTeam => gameTeam.awayTeam.name.trim().toUpperCase() === bet.trim());
                                                 if (gs === undefined) {
-                                                    gs = gameScores.find(gameTeam => gameTeam.homeTeam.poolName.trim() === bet.trim());
+                                                    gs = gameScores.find(gameTeam => gameTeam.homeTeam.name.trim().toUpperCase() === bet.trim());
                                                     if (gs !== undefined) {
                                                         betOnTeam = gs.homeTeam;
                                                     }
@@ -214,10 +214,10 @@ function App() {
                                                     return (<TableCell key={idCounter}>
                                                         <img
                                                             src={betOnTeam.logo}
-                                                            alt={betOnTeam.poolName}
-                                                            title={betOnTeam.poolName}
+                                                            alt={betOnTeam.name.toUpperCase()}
+                                                            title={betOnTeam.name.toUpperCase()}
                                                             className={`logo ${(
-                                                                (gs.winningTeam !== null && gs.winningTeam) !== betOnTeam.poolName)
+                                                                (gs.winningTeam !== null && gs.winningTeam) !== betOnTeam.name)
                                                             && (gs.awayScore > 0 && gs.homeScore > 0)? `loser` : ``}`} />
                                                     </TableCell>);
                                                 } else {
