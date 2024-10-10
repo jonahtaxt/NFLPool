@@ -35,7 +35,6 @@ public class ScoreController {
         this.excelReader = excelReader;
     }
 
-    @CrossOrigin
     @GetMapping("/scores/{year}/{week}")
     String GetWeekScores(@PathVariable int year, @PathVariable int week) throws ExecutionException, InterruptedException, JsonProcessingException {
 
