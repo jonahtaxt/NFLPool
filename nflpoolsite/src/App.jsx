@@ -29,7 +29,7 @@ function App() {
     const [winner, setWinner] = useState(null);
 
     const nflAPIClient = axios.create({
-        baseURL: "https://apipool.cloudsolo.net/scores"
+        baseURL: "https://quiniela.cloudsolo.net/api/scores"
     });
 
     const handleYearChange = (event) => {
