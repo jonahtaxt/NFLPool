@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @RestController
+@RequestMapping("scores")
 public class ScoreController {
 
     @Autowired
@@ -35,8 +38,7 @@ public class ScoreController {
         this.excelReader = excelReader;
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
-    @GetMapping("/scores/{year}/{week}")
+    @GetMapping("/{year}/{week}")
     String GetWeekScores(@PathVariable int year, @PathVariable int week) throws ExecutionException, InterruptedException, JsonProcessingException {
 
         CompletableFuture<WeekResults> weekResults = this.poolService.asyncGetWeekResults(year, week);
@@ -45,7 +47,7 @@ public class ScoreController {
         return ow.writeValueAsString(weekResults.get());
     }
 
-    @PostMapping("/scores/")
+    @PostMapping
     void PostWeekParticipants(@RequestParam("file")MultipartFile file,
                                 int year, int week) {
         try(InputStream fileStream = file.getInputStream()) {
