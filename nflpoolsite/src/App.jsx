@@ -29,7 +29,7 @@ function App() {
     const [winner, setWinner] = useState(null);
 
     const nflAPIClient = axios.create({
-        baseURL: "http://localhost:8080/scores"
+        baseURL: import.meta.env.VITE_API_URL + "/scores"
     });
 
     const handleYearChange = (event) => {
