@@ -167,6 +167,15 @@ function App() {
                                 <TableRow>
                                     <TableCell><div className="points">Posici&oacute;n</div></TableCell>
                                     <TableCell><div className="points" style={{ width: '50%'}}>Nombre</div></TableCell>
+                                    <TableCell>
+                                        <div className="points" style={{ fontWeight: 'bold' }}>Aciertos</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="points" style={{ fontWeight: 'bold' }}>Puntos Monday Night</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="points" style={{ fontWeight: 'bold' }}>Dif. Puntos</div>
+                                    </TableCell>
                                     {gameScores.map((gameScore) => {
                                         return (
                                             <TableCell key={gameScore.gameScoreId}>
@@ -178,15 +187,6 @@ function App() {
                                             </TableCell>
                                         );
                                     })}
-                                    <TableCell>
-                                        <div className="points" style={{ fontWeight: 'bold' }}>Aciertos</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="points" style={{ fontWeight: 'bold' }}>Puntos Monday Night</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="points" style={{ fontWeight: 'bold' }}>Dif. Puntos</div>
-                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -197,6 +197,9 @@ function App() {
                                                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell><div className="poolPosition">{poolPosition}</div></TableCell>
                                             <TableCell><div className="participantName">{participant.name}</div></TableCell>
+                                            <TableCell>{participant.totalPoints}</TableCell>
+                                            <TableCell>{participant.mondayNightPoints}</TableCell>
+                                            <TableCell>{participant.mondayNightPointsDifference}</TableCell>
                                             {participant.bets.map((bet) => {
                                                 let betOnTeam;
                                                 let gs;
@@ -224,9 +227,6 @@ function App() {
                                                     return (<TableCell key={idCounter}>&nbsp;</TableCell>);
                                                 }
                                             })}
-                                            <TableCell>{participant.totalPoints}</TableCell>
-                                            <TableCell>{participant.mondayNightPoints}</TableCell>
-                                            <TableCell>{participant.mondayNightPointsDifference}</TableCell>
                                         </TableRow>
                                     );
                                 })}
