@@ -255,8 +255,8 @@ function App() {
                                         return (
                                             <TableCell key={gameScore.gameScoreId}>
                                                 <div className="game">
-                                                    <div className={`team ${gameScore.homeScore > gameScore.awayScore ? `winner` : ``}`}>{gameScore.homeTeam.name} ({gameScore.homeScore})</div>
                                                     <div className={`team ${gameScore.homeScore < gameScore.awayScore ? `winner` : ``}`}>{gameScore.awayTeam.name} ({gameScore.awayScore}) @</div>
+                                                    <div className={`team ${gameScore.homeScore > gameScore.awayScore ? `winner` : ``}`}>{gameScore.homeTeam.name} ({gameScore.homeScore})</div>
                                                 </div>
                                             </TableCell>
                                         );
