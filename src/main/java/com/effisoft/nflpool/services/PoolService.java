@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Service
@@ -34,65 +35,65 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
     public CompletableFuture<WeekResults> asyncGetWeekResults(int year, int week) {
         CompletableFuture<WeekResults> result = new CompletableFuture<>();
 
-        Executors.newCachedThreadPool().submit(() -> {
-            CompletableFuture<ParticipantWeekData> futureParticipantWeekData = this.databaseAccess.asyncGetById(ParticipantWeekData.class,"ParticipantWeekData",
-                    String.format("%s.%s", year, week));
-            CompletableFuture<List<GameScore>> completableFutureGameScore = this.nflCrawler.asyncGetWeekScore(year, week);
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futureParticipantWeekData, completableFutureGameScore);
-            try {
-                combinedFuture.get();
-                ParticipantWeekData participants = futureParticipantWeekData.get();
-                List<GameScore> weekGameScores = completableFutureGameScore.get();
+        try(ExecutorService executorService = Executors.newCachedThreadPool()) {
+            executorService.submit(() -> {
+                CompletableFuture<ParticipantWeekData> futureParticipantWeekData = this.databaseAccess.asyncGetById(ParticipantWeekData.class,"ParticipantWeekData",
+                        String.format("%s.%s", year, week));
+                CompletableFuture<List<GameScore>> completableFutureGameScore = this.nflCrawler.asyncGetWeekScore(year, week);
+                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futureParticipantWeekData, completableFutureGameScore);
+                try {
+                    combinedFuture.get();
+                    ParticipantWeekData participants = futureParticipantWeekData.get();
+                    List<GameScore> weekGameScores = completableFutureGameScore.get();
 
-                WeekResults weekResults = new WeekResults(weekGameScores,
-                        participants != null ? participants.getParticipants() : null,
-                        null);
+                    WeekResults weekResults = new WeekResults(weekGameScores,
+                            participants != null ? participants.getParticipants() : null,
+                            null);
 
-                if(participants != null) {
-                    List<String> mondayNightTeams = participants.getMondayNightTeams();
+                    if(participants != null) {
+                        List<String> mondayNightTeams = participants.getMondayNightTeams();
 
-                    CalculateTotalPoints(weekResults);
+                        CalculateTotalPoints(weekResults);
 
-                    if (mondayNightTeams != null) {
-                        GameScore mondayNightGame = CalculateMondayNightPoints(weekResults, mondayNightTeams);
-                        OrderParticipantsByWinner(weekResults);
-                        if(mondayNightGame != null) {
-                            if (mondayNightGame.getAwayScore() > 0 || mondayNightGame.getHomeScore() > 0) {
-                                weekResults.setParticipantWinnerId(weekResults.getParticipants().getFirst().getId());
+                        if (mondayNightTeams != null) {
+                            GameScore mondayNightGame = CalculateMondayNightPoints(weekResults, mondayNightTeams);
+                            OrderParticipantsByWinner(weekResults);
+                            if(mondayNightGame != null) {
+                                if (mondayNightGame.getAwayScore() > 0 || mondayNightGame.getHomeScore() > 0) {
+                                    weekResults.setParticipantWinnerId(weekResults.getParticipants().getFirst().getId());
+                                }
                             }
                         }
+
+                        this.databaseAccess.upsert(new DatabaseDTO<>(new ParticipantWeekData(weekResults.getParticipants(), mondayNightTeams), "ParticipantWeekData",
+                                String.format("%s.%s", year, week)));
                     }
 
-                    this.databaseAccess.upsert(new DatabaseDTO<>(new ParticipantWeekData(weekResults.getParticipants(), mondayNightTeams), "ParticipantWeekData",
-                            String.format("%s.%s", year, week)));
+                    result.complete(weekResults);
+                    return null;
+                } catch (InterruptedException | ExecutionException e) {
+                    result.completeExceptionally(new PoolServiceException("An error occurred during retrieval of Week Results", e));
+                    return null;
                 }
-
-                result.complete(weekResults);
-                return null;
-            } catch (InterruptedException | ExecutionException e) {
-                result.completeExceptionally(new PoolServiceException("An error occurred during retrieval of Week Results", e));
-                return null;
-            }
-        });
+            });
+        }
         return result;
     }
 
     private static void CalculateTotalPoints(WeekResults weekResults) {
         if (weekResults.getParticipants() == null) return;
 
-        weekResults.getParticipants().forEach(participant -> { participant.setTotalPoints(0); });
+        weekResults.getParticipants().forEach(participant -> participant.setTotalPoints(0));
 
         weekResults.getGameScores().stream()
                 .map(GameScore::getWinningTeam)
                 .filter(Objects::nonNull)
-                .forEach(winningTeam -> {
-                    weekResults.getParticipants().forEach(participant -> {
-                        if(participant.getBets().stream()
-                                .anyMatch(bet -> Objects.equals(bet, winningTeam.toUpperCase()))) {
-                            participant.addTotalPoints();
-                        }
-                    });
-                });
+                .forEach(winningTeam -> weekResults.getParticipants().forEach(participant -> {
+                    if(participant.getBets().stream()
+                            .anyMatch(bet -> Objects.equals(bet, winningTeam.toUpperCase()))) {
+                        participant.addTotalPoints();
+                    }
+                }));
     }
 
     private static GameScore CalculateMondayNightPoints(WeekResults weekResults,
@@ -103,7 +104,7 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
                 .filter(gameScore -> Objects.equals(gameScore.getHomeTeam().getName().toUpperCase(), mondayNightTeams.getLast()) &&
                         Objects.equals(gameScore.getAwayTeam().getName().toUpperCase(), mondayNightTeams.getFirst()))
                 .findFirst()
-                .orElseGet(() -> null);
+                .orElse(null);
 
         if(mondayNightGame == null) return null;
 
@@ -112,9 +113,9 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
         int mondayNightScoreDifference = mondayNightGame.getAwayScore() + mondayNightGame.getHomeScore();
 
         weekResults.getParticipants().forEach(participant -> {
-            int pointDifferce = mondayNightScoreDifference - participant.getMondayNightPoints();
-            if(pointDifferce < 0) pointDifferce *=-1;
-            participant.setMondayNightPointsDifference(pointDifferce);
+            int pointDifference = mondayNightScoreDifference - participant.getMondayNightPoints();
+            if(pointDifference < 0) pointDifference *=-1;
+            participant.setMondayNightPointsDifference(pointDifference);
         });
 
         return mondayNightGame;

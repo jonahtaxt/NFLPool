@@ -25,8 +25,8 @@
   font-family: "Roboto Condensed", sans-serif;
   text-orientation: mixed;
   writing-mode: vertical-rl;
-  font-size: 14px;
-  height: 260px;
+  font-size: 12px;
+  height: 120px;
   text-align: right;
 }
 
@@ -97,7 +97,12 @@ h1 {
 }
 
 .participantName {
-  font-size: 13px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.totalPoints {
+  text-align: center;
 }
 
 .winnerParticipant {

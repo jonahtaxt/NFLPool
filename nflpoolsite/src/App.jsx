@@ -18,15 +18,34 @@ import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { grey } from '@mui/material/colors';
 import { styled } from '@mui/material/styles';
+import { Modal, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
 
 function App() {
     const [gameScores, setGameScores] = useState([]);
     const [participants, setParticipants] = useState([]);
+    const [orderedParticipants, setOrderedParticipants] = useState([]);
     const [year, setYear] = useState(0);
     const [week, setWeek] = useState(0);
+    const [participantId, setParticipant] = useState('');
     const [showPool, setShowPool] = useState(false);
     const [firstRun, setFirstRun] = useState(true);
     const [winner, setWinner] = useState(null);
+    const [selectedParticipant, setSelectedParticipant] = useState({});
+    const [open, setOpen] = useState(false);
+    const handleClose = () => setOpen(false);
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+      };
 
     const nflAPIClient = axios.create({
         baseURL: import.meta.env.VITE_API_URL + "/scores"
@@ -42,6 +61,14 @@ function App() {
 
     const refreshPool = () => {
         fetchPoolData();
+    }
+
+    const searchParticipant = (event) => {
+        let participant = participants.find(p => p.id == event.target.value);
+        if(participant) {
+            setSelectedParticipant(participant);
+            setOpen(true);
+        }
     }
 
     const ColorButton = styled(Button)(({ theme }) => ({
@@ -60,6 +87,8 @@ function App() {
         setWinner(null);
         setGameScores([]);
         setParticipants([]);
+        setOrderedParticipants([]);
+        setParticipant("");
         setShowPool(false);
         let response = await nflAPIClient.get('/' + year + '/' + week);
         if (response.data.gameScores !== null) {
@@ -68,6 +97,7 @@ function App() {
         }
         if (response.data.participants !== null) {
             setParticipants(response.data.participants);
+            setOrderedParticipants([...response.data.participants].sort((a, b) => a.name.localeCompare(b.name)));
         }
         if (response.data.participantWinnerId !== null && response.data.participants !== null) {
             setWinner(response.data.participants.filter(participant => {
@@ -133,6 +163,21 @@ function App() {
                         <MenuItem value={18}>18</MenuItem>
                     </Select>
                 </FormControl>
+                <FormControl variant='filled' sx={{ m: 1, minWidth: 120 }}>
+                    <InputLabel id="selectedParticipant">Participante</InputLabel>
+                    <Select
+                        labelId="selectedParticipant"
+                        id="selectedParticipant"
+                        value={participantId}
+                        label="Participante"
+                        onChange={searchParticipant}>
+                            {orderedParticipants.map((participant) => {
+                                return(
+                                    <MenuItem key={participant.id} value={participant.id}>{participant.name}</MenuItem>
+                                );
+                            })}
+                    </Select>
+                </FormControl>
                 <FormControl>
                     <ColorButton
                         sx={{
@@ -156,6 +201,36 @@ function App() {
                         </div>
                     </FormControl>
                 }
+                <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                    >
+                        <Box sx={style}>
+                            <Typography id="modal-modal-title" variant="h6" component="h2">{selectedParticipant.name}</Typography>
+                            <Typography id="modal-modal-description" sx={{mt: 2}}>
+                                <Table>
+                                    <TableRow>
+                                        <TableCell>Posici&oacute;n</TableCell>
+                                        <TableCell>{selectedParticipant.poolPosition}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Aciertos</TableCell>
+                                        <TableCell>{selectedParticipant.totalPoints}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Diferencia Monday Night</TableCell>
+                                        <TableCell>{selectedParticipant.mondayNightPointsDifference}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Quiniela Entregada:</TableCell>
+                                        <TableCell>{selectedParticipant.id}</TableCell>
+                                    </TableRow>
+                                </Table>
+                            </Typography>
+                        </Box>
+                </Modal>
             </div>
             {firstRun && <div className="firstRun">Selecciona un a&ntilde;o y semana para ver los resultados</div>}
             {!showPool && !firstRun && <div className="loading"><img src={spinningFootball} alt="loading..." /></div>}
@@ -163,7 +238,7 @@ function App() {
                 <Paper sx={{ width: '100%', overflow: 'hidden' }} elevation={12}>
                     <TableContainer sx={{ maxHeight: 750 }}>
                         <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
+                            <TableHead id="tHeader">
                                 <TableRow>
                                     <TableCell><div className="points">Posici&oacute;n</div></TableCell>
                                     <TableCell><div className="points" style={{ width: '50%'}}>Nombre</div></TableCell>
@@ -171,7 +246,7 @@ function App() {
                                         <div className="points" style={{ fontWeight: 'bold' }}>Aciertos</div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="points" style={{ fontWeight: 'bold' }}>Puntos Monday Night</div>
+                                        <div className="points" style={{ fontWeight: 'bold' }}>Monday Night</div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="points" style={{ fontWeight: 'bold' }}>Dif. Puntos</div>
@@ -181,8 +256,7 @@ function App() {
                                             <TableCell key={gameScore.gameScoreId}>
                                                 <div className="game">
                                                     <div className={`team ${gameScore.homeScore > gameScore.awayScore ? `winner` : ``}`}>{gameScore.homeTeam.name} ({gameScore.homeScore})</div>
-                                                    <div className="team">&nbsp;@&nbsp;</div>
-                                                    <div className={`team ${gameScore.homeScore < gameScore.awayScore ? `winner` : ``}`}>{gameScore.awayTeam.name} ({gameScore.awayScore})</div>
+                                                    <div className={`team ${gameScore.homeScore < gameScore.awayScore ? `winner` : ``}`}>{gameScore.awayTeam.name} ({gameScore.awayScore}) @</div>
                                                 </div>
                                             </TableCell>
                                         );
@@ -192,14 +266,15 @@ function App() {
                             <TableBody>
                                 {participants.map((participant) => {
                                     poolPosition++;
+                                    participant.poolPosition = poolPosition;
                                     return (
                                         <TableRow key={participant.id}
                                                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell><div className="poolPosition">{poolPosition}</div></TableCell>
                                             <TableCell><div className="participantName">{participant.name}</div></TableCell>
-                                            <TableCell>{participant.totalPoints}</TableCell>
-                                            <TableCell>{participant.mondayNightPoints}</TableCell>
-                                            <TableCell>{participant.mondayNightPointsDifference}</TableCell>
+                                            <TableCell className={`totalPoints`}>{participant.totalPoints}</TableCell>
+                                            <TableCell className={`totalPoints`}>{participant.mondayNightPoints}</TableCell>
+                                            <TableCell className={`totalPoints`}>{participant.mondayNightPointsDifference}</TableCell>
                                             {participant.bets.map((bet) => {
                                                 let betOnTeam;
                                                 let gs;

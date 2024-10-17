@@ -7,9 +7,8 @@ import com.effisoft.nflpool.interfaces.PoolService;
 import com.effisoft.nflpool.model.WeekResults;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,22 +36,25 @@ public class ScoreController {
     }
 
     @GetMapping("/{year}/{week}")
-    String GetWeekScores(@PathVariable int year, @PathVariable int week) throws ExecutionException, InterruptedException, JsonProcessingException {
+    ResponseEntity<WeekResults> GetWeekScores(@PathVariable int year, @PathVariable int week) throws InterruptedException {
 
-        CompletableFuture<WeekResults> weekResults = this.poolService.asyncGetWeekResults(year, week);
-
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(weekResults.get());
+        try {
+            CompletableFuture<WeekResults> weekResults = this.poolService.asyncGetWeekResults(year, week);
+            return ResponseEntity.ok(weekResults.get());
+        } catch(ExecutionException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping
-    void PostWeekParticipants(@RequestParam("file")MultipartFile file,
+    ResponseEntity<?> PostWeekParticipants(@RequestParam("file")MultipartFile file,
                                 int year, int week) {
         try(InputStream fileStream = file.getInputStream()) {
             this.databaseAccess.upsert(new DatabaseDTO<>(excelReader.readParticipants(fileStream), "ParticipantWeekData",
                     String.format("%s.%s", year, week)));
+            return ResponseEntity.ok(null);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
