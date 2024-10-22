@@ -1,5 +1,6 @@
 package com.effisoft.nflpool.services;
 
+import com.effisoft.nflpool.exceptions.PoolServiceException;
 import com.effisoft.nflpool.interfaces.DatabaseAccess;
 import com.effisoft.nflpool.interfaces.NFLCrawler;
 import com.effisoft.nflpool.model.GameScore;
@@ -7,7 +8,6 @@ import com.effisoft.nflpool.model.Participant;
 import com.effisoft.nflpool.model.ParticipantWeekData;
 import com.effisoft.nflpool.model.WeekResults;
 import com.effisoft.nflpool.model.data.DatabaseDTO;
-import com.effisoft.nflpool.services.exceptions.PoolServiceException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

@@ -1,8 +1,8 @@
 package com.effisoft.nflpool.services;
 
+import com.effisoft.nflpool.exceptions.NFLCrawlerException;
 import com.effisoft.nflpool.model.GameScore;
 import com.effisoft.nflpool.model.teams.Team;
-import com.effisoft.nflpool.services.exceptions.NFLCrawlerException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

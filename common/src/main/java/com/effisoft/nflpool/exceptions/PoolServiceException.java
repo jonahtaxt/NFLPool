@@ -1,4 +1,4 @@
-package com.effisoft.nflpool.services.exceptions;
+package com.effisoft.nflpool.exceptions;
 
 public class PoolServiceException extends Exception {
     public PoolServiceException(String errorMessage, Throwable err) {
