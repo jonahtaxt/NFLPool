@@ -59,7 +59,7 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
                             GameScore mondayNightGame = CalculateMondayNightPoints(weekResults, mondayNightTeams);
                             OrderParticipantsByWinner(weekResults);
                             if(mondayNightGame != null) {
-                                if (mondayNightGame.getAwayScore() > 0 || mondayNightGame.getHomeScore() > 0) {
+                                if (mondayNightGame.awayScore() > 0 || mondayNightGame.homeScore() > 0) {
                                     weekResults.setParticipantWinnerId(weekResults.getParticipants().getFirst().getId());
                                 }
                             }
@@ -101,16 +101,16 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
         if (weekResults.getParticipants() == null) return null;
 
         GameScore mondayNightGame = weekResults.getGameScores().stream()
-                .filter(gameScore -> Objects.equals(gameScore.getHomeTeam().getName().toUpperCase(), mondayNightTeams.getLast()) &&
-                        Objects.equals(gameScore.getAwayTeam().getName().toUpperCase(), mondayNightTeams.getFirst()))
+                .filter(gameScore -> Objects.equals(gameScore.homeTeam().getName().toUpperCase(), mondayNightTeams.getLast()) &&
+                        Objects.equals(gameScore.awayTeam().getName().toUpperCase(), mondayNightTeams.getFirst()))
                 .findFirst()
                 .orElse(null);
 
         if(mondayNightGame == null) return null;
 
-        if(mondayNightGame.getAwayScore() <= 0 && mondayNightGame.getHomeScore() <= 0) return mondayNightGame;
+        if(mondayNightGame.awayScore() <= 0 && mondayNightGame.homeScore() <= 0) return mondayNightGame;
 
-        int mondayNightScoreDifference = mondayNightGame.getAwayScore() + mondayNightGame.getHomeScore();
+        int mondayNightScoreDifference = mondayNightGame.awayScore() + mondayNightGame.homeScore();
 
         weekResults.getParticipants().forEach(participant -> {
             int pointDifference = mondayNightScoreDifference - participant.getMondayNightPoints();
@@ -129,14 +129,14 @@ public class PoolService implements com.effisoft.nflpool.interfaces.PoolService 
 
             weekResults.getGameScores().forEach(gameScore -> {
                 if(participant.getBets().stream()
-                        .anyMatch(bet -> gameScore.getAwayTeam().getName().toUpperCase().equals(bet))) {
-                    if (gameScore.getAwayTeam() != null) {
-                        orderedBets.add(gameScore.getAwayTeam().getName().toUpperCase());
+                        .anyMatch(bet -> gameScore.awayTeam().getName().toUpperCase().equals(bet))) {
+                    if (gameScore.awayTeam() != null) {
+                        orderedBets.add(gameScore.awayTeam().getName().toUpperCase());
                     }
                 } else if (participant.getBets().stream()
-                        .anyMatch(bet -> gameScore.getHomeTeam().getName().toUpperCase().equals(bet))) {
-                    if (gameScore.getHomeTeam() != null) {
-                        orderedBets.add(gameScore.getHomeTeam().getName().toUpperCase());
+                        .anyMatch(bet -> gameScore.homeTeam().getName().toUpperCase().equals(bet))) {
+                    if (gameScore.homeTeam() != null) {
+                        orderedBets.add(gameScore.homeTeam().getName().toUpperCase());
                     }
                 } else {
                     orderedBets.add("");
